@@ -12,7 +12,7 @@ A comprehensive gold price calculator for the Delhi region — built with histor
 - **Interactive chart** — price, gain ₹, and return % views
 
 ## Live Site
-👉 [https://YOUR_USERNAME.github.io/delhi-gold-calculator](https://YOUR_USERNAME.github.io/delhi-gold-calculator)
+👉 [https://naven01.github.io/delhi-gold-calculator](https://naven01.github.io/delhi-gold-calculator)
 
 ## Data Sources
 Prices based on IBJA (India Bullion & Jewellers Association) annual averages, GoodReturns historical data, and public bullion market records for the Delhi region.
