@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delhi Gold Calculator — Historical & Forecast</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0C0B09;
+  --bg2: #141210;
+  --bg3: #1C1A16;
+  --bg4: #242018;
+  --gold: #C9A227;
+  --gold-light: #E8C547;
+  --gold-pale: #F5DFA0;
+  --gold-dim: #7A6118;
+  --text: #F2EDD7;
+  --muted: #8C8270;
+  --border: rgba(201,162,39,0.15);
+  --border-bright: rgba(201,162,39,0.35);
+  --green: #4CAF7D;
+  --red: #E05252;
+  --blue: #5B9BD5;
+  --r14: #B8860B;
+  --r18: #C9A227;
+  --r22: #E8C547;
+  --r24: #F5DFA0;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+  background-image:
+    radial-gradient(ellipse 60% 40% at 80% 10%, rgba(201,162,39,0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 30% at 10% 80%, rgba(201,162,39,0.04) 0%, transparent 50%);
+}
+
+/* HEADER */
+.header {
+  padding: 2rem 2.5rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+}
+.header-left { display: flex; align-items: center; gap: 16px; }
+.gold-icon {
+  width: 52px; height: 52px; border-radius: 14px;
+  background: linear-gradient(135deg, #8B6914, #C9A227, #F5DFA0, #C9A227);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; font-family: 'Cormorant Garamond', serif; font-weight: 700;
+  box-shadow: 0 0 30px rgba(201,162,39,0.3), inset 0 1px 0 rgba(255,255,255,0.2);
+}
+.header-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 28px; font-weight: 600; letter-spacing: -0.5px;
+  color: var(--gold-pale);
+}
+.header-sub { font-size: 12px; color: var(--muted); font-family: 'DM Mono', monospace; margin-top: 2px; }
+.live-badge {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 14px; border-radius: 100px;
+  border: 1px solid var(--border-bright);
+  font-family: 'DM Mono', monospace; font-size: 11px; color: var(--gold);
+}
+.live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: blink 2s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+/* LIVE RATES STRIP */
+.rates-strip {
+  display: flex; gap: 0; border-bottom: 1px solid var(--border);
+  overflow-x: auto; scrollbar-width: none;
+}
+.rates-strip::-webkit-scrollbar { display: none; }
+.rate-cell {
+  flex: 1; min-width: 120px; padding: 12px 20px;
+  border-right: 1px solid var(--border);
+  text-align: center;
+}
+.rate-cell:last-child { border-right: none; }
+.rate-karat { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); margin-bottom: 3px; }
+.rate-price { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 600; }
+.rate-gram { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); margin-top: 1px; }
+
+/* MAIN LAYOUT */
+.main { display: grid; grid-template-columns: 380px 1fr; gap: 0; min-height: calc(100vh - 140px); }
+@media(max-width:900px) { .main { grid-template-columns: 1fr; } }
+
+/* CALCULATOR PANEL */
+.calc-panel {
+  border-right: 1px solid var(--border);
+  padding: 2rem;
+  overflow-y: auto;
+}
+.section-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 13px; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 1.25rem; display: flex; align-items: center; gap: 8px;
+}
+.section-title::after { content:''; flex:1; height:1px; background:var(--border); }
+
+.form-group { margin-bottom: 1.25rem; }
+label {
+  display: block; font-size: 12px; color: var(--muted);
+  font-family: 'DM Mono', monospace; margin-bottom: 7px; letter-spacing: 0.04em;
+}
+input[type=number], input[type=range], select {
+  width: 100%; background: var(--bg3);
+  border: 1px solid var(--border-bright); border-radius: 8px;
+  color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 15px;
+  padding: 11px 14px; outline: none; transition: border-color .2s;
+  -webkit-appearance: none; appearance: none;
+}
+input[type=number]:focus, select:focus { border-color: var(--gold); }
+select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23C9A227' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; cursor: pointer; }
+select option { background: #1C1A16; }
+
+.karat-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; }
+.karat-btn {
+  padding: 10px 0; border-radius: 8px; border: 1px solid var(--border);
+  background: var(--bg3); cursor: pointer; transition: all .2s;
+  text-align: center; font-family: 'DM Mono', monospace; font-size: 13px; color: var(--muted);
+}
+.karat-btn:hover { border-color: var(--gold-dim); color: var(--gold); }
+.karat-btn.active { border-color: var(--gold); background: rgba(201,162,39,0.12); color: var(--gold); }
+.karat-btn .karat-purity { font-size: 9px; margin-top: 2px; color: inherit; opacity: 0.7; }
+
+.range-row { display: flex; align-items: center; gap: 10px; }
+input[type=range] {
+  padding: 0; height: 4px; background: var(--bg4); border: none; cursor: pointer;
+  flex: 1;
+  background: linear-gradient(to right, var(--gold) 0%, var(--gold) 50%, var(--bg4) 50%, var(--bg4) 100%);
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%;
+  background: var(--gold); border: 2px solid var(--bg); cursor: pointer;
+  box-shadow: 0 0 8px rgba(201,162,39,0.5);
+}
+.range-val {
+  font-family: 'DM Mono', monospace; font-size: 13px; color: var(--gold);
+  min-width: 50px; text-align: right;
+}
+
+.charges-toggle {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 14px; background: var(--bg3); border-radius: 8px;
+  border: 1px solid var(--border); cursor: pointer; margin-bottom: 10px;
+  font-size: 14px; transition: border-color .2s;
+}
+.charges-toggle:hover { border-color: var(--gold-dim); }
+.toggle-switch {
+  width: 36px; height: 20px; border-radius: 10px; background: var(--bg4);
+  border: 1px solid var(--border-bright); position: relative; transition: background .2s;
+}
+.toggle-switch.on { background: var(--gold-dim); }
+.toggle-thumb {
+  width: 14px; height: 14px; border-radius: 50%; background: var(--muted);
+  position: absolute; top: 2px; left: 2px; transition: all .2s;
+}
+.toggle-switch.on .toggle-thumb { left: 18px; background: var(--gold); }
+
+.btn-calculate {
+  width: 100%; padding: 15px; border: none; border-radius: 10px;
+  background: linear-gradient(135deg, #8B6914, #C9A227, #E8C547);
+  color: #0C0B09; font-family: 'Cormorant Garamond', serif;
+  font-size: 19px; font-weight: 700; cursor: pointer;
+  letter-spacing: 0.05em; transition: all .2s; margin-top: 1.5rem;
+  box-shadow: 0 4px 20px rgba(201,162,39,0.3);
+}
+.btn-calculate:hover { transform: translateY(-1px); box-shadow: 0 8px 30px rgba(201,162,39,0.5); }
+.btn-calculate:active { transform: translateY(0); }
+
+/* RESULTS PANEL */
+.results-panel { padding: 2rem; overflow-y: auto; }
+
+.result-hero {
+  background: linear-gradient(135deg, var(--bg3), var(--bg2));
+  border: 1px solid var(--border-bright); border-radius: 16px;
+  padding: 2rem; margin-bottom: 1.5rem;
+  position: relative; overflow: hidden;
+}
+.result-hero::before {
+  content: '₹'; position: absolute; right: 20px; top: 10px;
+  font-family: 'Cormorant Garamond', serif; font-size: 120px; font-weight: 700;
+  color: rgba(201,162,39,0.04); line-height: 1; pointer-events: none;
+}
+.result-label { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); margin-bottom: 6px; }
+.result-amount {
+  font-family: 'Cormorant Garamond', serif; font-size: clamp(32px,5vw,52px);
+  font-weight: 600; color: var(--gold-pale); line-height: 1;
+}
+.result-row { display: flex; gap: 1.5rem; margin-top: 1.5rem; flex-wrap: wrap; }
+.result-stat { }
+.rs-label { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; }
+.rs-val { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 600; margin-top: 2px; }
+.rs-val.pos { color: var(--green); }
+.rs-val.neg { color: var(--red); }
+.rs-val.gold { color: var(--gold); }
+
+.metrics-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 1.5rem; }
+@media(max-width:600px) { .metrics-grid { grid-template-columns: 1fr 1fr; } }
+.metric-card {
+  background: var(--bg3); border: 1px solid var(--border); border-radius: 10px;
+  padding: 14px; text-align: center;
+}
+.mc-val { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 600; color: var(--gold-pale); }
+.mc-label { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; margin-top: 3px; }
+
+/* CHART AREA */
+.chart-wrap {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 12px;
+  padding: 1.5rem; margin-bottom: 1.5rem;
+}
+.chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 8px; }
+.chart-title { font-family: 'Cormorant Garamond', serif; font-size: 17px; font-weight: 600; color: var(--gold-pale); }
+.chart-tabs { display: flex; gap: 6px; }
+.chart-tab {
+  padding: 5px 12px; border-radius: 6px; border: 1px solid var(--border);
+  background: transparent; color: var(--muted); font-family: 'DM Mono', monospace;
+  font-size: 11px; cursor: pointer; transition: all .2s;
+}
+.chart-tab.active { border-color: var(--gold); color: var(--gold); background: rgba(201,162,39,0.1); }
+canvas { width: 100% !important; }
+
+/* COMPARISON TABLE */
+.comp-table-wrap {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 12px;
+  overflow: hidden; margin-bottom: 1.5rem;
+}
+.comp-table-header { padding: 14px 18px; border-bottom: 1px solid var(--border); }
+.comp-table-title { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 600; color: var(--gold-pale); }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th {
+  background: var(--bg3); color: var(--muted); font-family: 'DM Mono', monospace;
+  font-size: 10px; letter-spacing: 0.08em; font-weight: 400;
+  padding: 10px 16px; text-align: right; border-bottom: 1px solid var(--border);
+}
+th:first-child { text-align: left; }
+td { padding: 10px 16px; text-align: right; border-bottom: 1px solid rgba(201,162,39,0.06); font-family: 'DM Mono', monospace; font-size: 12px; }
+td:first-child { text-align: left; color: var(--muted); }
+tr:last-child td { border-bottom: none; }
+tr.highlight-row td { background: rgba(201,162,39,0.06); color: var(--gold-pale); }
+tr:hover td { background: rgba(201,162,39,0.04); }
+
+/* FORECAST */
+.forecast-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; margin-bottom: 1.5rem; }
+@media(max-width:500px) { .forecast-grid { grid-template-columns: 1fr; } }
+.forecast-card {
+  background: var(--bg3); border: 1px solid var(--border); border-radius: 10px;
+  padding: 16px; position: relative; overflow: hidden;
+}
+.forecast-card::before {
+  content: ''; position: absolute; inset: 0; border-radius: 10px;
+  background: linear-gradient(135deg, rgba(201,162,39,0.05), transparent);
+}
+.fc-year { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); margin-bottom: 5px; }
+.fc-price { font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 600; color: var(--gold-pale); }
+.fc-range { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; margin-top: 3px; }
+.fc-conf { display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 100px; margin-top: 6px; font-family: 'DM Mono', monospace; }
+.fc-conf.high { background: rgba(76,175,125,0.15); color: var(--green); border: 1px solid rgba(76,175,125,0.3); }
+.fc-conf.med { background: rgba(201,162,39,0.15); color: var(--gold); border: 1px solid rgba(201,162,39,0.3); }
+.fc-conf.low { background: rgba(224,82,82,0.12); color: var(--red); border: 1px solid rgba(224,82,82,0.25); }
+
+/* FACTORS */
+.factors-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; margin-bottom: 1.5rem; }
+.factor-card {
+  background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: 14px;
+  display: flex; align-items: flex-start; gap: 10px;
+}
+.factor-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+.factor-title { font-size: 13px; font-weight: 500; margin-bottom: 3px; color: var(--text); }
+.factor-body { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+/* YEAR TIMELINE */
+.timeline { margin-bottom: 1.5rem; }
+.tl-row {
+  display: flex; align-items: center; gap: 10px; padding: 8px 0;
+  border-bottom: 1px solid rgba(201,162,39,0.06);
+  cursor: pointer; transition: background .15s; border-radius: 6px; padding-left: 8px;
+}
+.tl-row:hover { background: rgba(201,162,39,0.04); }
+.tl-year { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); min-width: 42px; }
+.tl-bar-wrap { flex: 1; height: 6px; background: var(--bg4); border-radius: 100px; overflow: hidden; }
+.tl-bar { height: 100%; border-radius: 100px; background: linear-gradient(90deg, var(--gold-dim), var(--gold)); transition: width 1s; }
+.tl-price { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--gold-pale); min-width: 90px; text-align: right; }
+.tl-change { font-family: 'DM Mono', monospace; font-size: 11px; min-width: 60px; text-align: right; }
+
+/* EMPTY STATE */
+.empty-state {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  height: 400px; text-align: center;
+}
+.empty-icon { font-size: 56px; margin-bottom: 1rem; opacity: 0.3; }
+.empty-title { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 600; color: var(--muted); margin-bottom: 0.5rem; }
+.empty-sub { font-size: 13px; color: var(--muted); opacity: 0.7; line-height: 1.6; max-width: 280px; }
+
+/* DISCLAIMER */
+.disclaimer {
+  font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace;
+  line-height: 1.6; padding: 1rem 1.5rem; border-top: 1px solid var(--border);
+  background: var(--bg2);
+}
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-left">
+    <div class="gold-icon">Au</div>
+    <div>
+      <div class="header-title">Delhi Gold Calculator</div>
+      <div class="header-sub">Historical prices · Carat comparison · Forecast · 2000–2035</div>
+    </div>
+  </div>
+  <div class="live-badge">
+    <div class="live-dot"></div>
+    Live rates · 18 March 2026
+  </div>
+</div>
+
+<!-- LIVE RATES STRIP -->
+<div class="rates-strip">
+  <div class="rate-cell">
+    <div class="rate-karat">14 KARAT · 58.33%</div>
+    <div class="rate-price" style="color:#B8860B">₹9,211</div>
+    <div class="rate-gram">per gram</div>
+  </div>
+  <div class="rate-cell">
+    <div class="rate-karat">18 KARAT · 75%</div>
+    <div class="rate-price" style="color:#C9A227">₹11,843</div>
+    <div class="rate-gram">per gram</div>
+  </div>
+  <div class="rate-cell">
+    <div class="rate-karat">22 KARAT · 91.67%</div>
+    <div class="rate-price" style="color:#E8C547">₹14,470</div>
+    <div class="rate-gram">per gram</div>
+  </div>
+  <div class="rate-cell">
+    <div class="rate-karat">24 KARAT · 99.9%</div>
+    <div class="rate-price" style="color:#F5DFA0">₹15,786</div>
+    <div class="rate-gram">per gram</div>
+  </div>
+  <div class="rate-cell">
+    <div class="rate-karat">24K · 10 GRAMS</div>
+    <div class="rate-price" style="color:#F5DFA0">₹1,57,860</div>
+    <div class="rate-gram">per 10g</div>
+  </div>
+  <div class="rate-cell">
+    <div class="rate-karat">YTD RETURN</div>
+    <div class="rate-price" style="color:#4CAF7D">+18.4%</div>
+    <div class="rate-gram">Jan–Mar 2026</div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- ─── LEFT: CALCULATOR ─── -->
+  <div class="calc-panel">
+    <div class="section-title">Purchase Details</div>
+
+    <div class="form-group">
+      <label>GOLD CARAT / PURITY</label>
+      <div class="karat-grid">
+        <button class="karat-btn" data-karat="14" onclick="setKarat(14)">14K<div class="karat-purity">58.33%</div></button>
+        <button class="karat-btn active" data-karat="18" onclick="setKarat(18)">18K<div class="karat-purity">75.00%</div></button>
+        <button class="karat-btn" data-karat="22" onclick="setKarat(22)">22K<div class="karat-purity">91.67%</div></button>
+        <button class="karat-btn" data-karat="24" onclick="setKarat(24)">24K<div class="karat-purity">99.90%</div></button>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>PURCHASE YEAR</label>
+      <select id="buy-year" onchange="updateYearInfo()">
+        <option value="2000">2000</option><option value="2001">2001</option><option value="2002">2002</option>
+        <option value="2003">2003</option><option value="2004">2004</option><option value="2005">2005</option>
+        <option value="2006">2006</option><option value="2007">2007</option><option value="2008">2008</option>
+        <option value="2009">2009</option><option value="2010">2010</option><option value="2011">2011</option>
+        <option value="2012" selected>2012</option><option value="2013">2013</option><option value="2014">2014</option>
+        <option value="2015">2015</option><option value="2016">2016</option><option value="2017">2017</option>
+        <option value="2018">2018</option><option value="2019">2019</option><option value="2020">2020</option>
+        <option value="2021">2021</option><option value="2022">2022</option><option value="2023">2023</option>
+        <option value="2024">2024</option><option value="2025">2025</option><option value="2026">2026 (Current)</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>WEIGHT (GRAMS)</label>
+      <div class="range-row">
+        <input type="range" id="weight-slider" min="1" max="500" value="10" oninput="syncWeight(this.value)">
+        <span class="range-val" id="weight-display">10g</span>
+      </div>
+      <input type="number" id="weight-input" value="10" min="0.1" max="10000" step="0.1" placeholder="Enter grams" oninput="syncWeightInput(this.value)" style="margin-top:8px">
+    </div>
+
+    <div class="form-group">
+      <label>COMPARE WITH YEAR</label>
+      <select id="compare-year">
+        <option value="2026" selected>2026 (Current)</option>
+        <option value="2025">2025</option><option value="2024">2024</option>
+        <option value="2023">2023</option><option value="2022">2022</option>
+        <option value="2030">2030 (Forecast)</option><option value="2032">2032 (Forecast)</option>
+        <option value="2035">2035 (Forecast)</option>
+      </select>
+    </div>
+
+    <div class="section-title" style="margin-top:1.5rem">Charges & Extras</div>
+
+    <div class="charges-toggle" onclick="toggleMaking()">
+      <span>Include making charges</span>
+      <div class="toggle-switch" id="making-toggle"><div class="toggle-thumb"></div></div>
+    </div>
+
+    <div id="making-fields" style="display:none">
+      <div class="form-group">
+        <label>MAKING CHARGES (%)</label>
+        <div class="range-row">
+          <input type="range" id="making-slider" min="5" max="25" value="12" oninput="syncMaking(this.value)">
+          <span class="range-val" id="making-display">12%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="charges-toggle" onclick="toggleGST()">
+      <span>Include GST (3%)</span>
+      <div class="toggle-switch" id="gst-toggle"><div class="toggle-thumb"></div></div>
+    </div>
+
+    <button class="btn-calculate" onclick="calculate()">Calculate Value ✦</button>
+
+    <div style="margin-top:2rem">
+      <div class="section-title">Price Timeline (24K/g, Delhi)</div>
+      <div class="timeline" id="timeline-mini"></div>
+    </div>
+
+    <div style="margin-top:1.5rem">
+      <div class="section-title">Key Factors</div>
+      <div class="factors-grid">
+        <div class="factor-card"><div class="factor-icon">💵</div><div><div class="factor-title">USD/INR Rate</div><div class="factor-body">Weaker rupee directly raises gold import prices in India</div></div></div>
+        <div class="factor-card"><div class="factor-icon">🏦</div><div><div class="factor-title">Central Banks</div><div class="factor-body">RBI & global CB gold purchases drive long-term demand</div></div></div>
+        <div class="factor-card"><div class="factor-icon">📈</div><div><div class="factor-title">Inflation</div><div class="factor-body">Gold acts as inflation hedge; CPI spikes correlate with rallies</div></div></div>
+        <div class="factor-card"><div class="factor-icon">⚠️</div><div><div class="factor-title">Geopolitics</div><div class="factor-body">War, sanctions & global risk push safe-haven demand for gold</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── RIGHT: RESULTS ─── -->
+  <div class="results-panel" id="results-panel">
+    <div class="empty-state" id="empty-state">
+      <div class="empty-icon">⚖</div>
+      <div class="empty-title">Set your parameters</div>
+      <div class="empty-sub">Choose your carat, purchase year and weight, then click Calculate to see full historical analysis and forecast.</div>
+    </div>
+
+    <div id="results-content" style="display:none">
+
+      <!-- HERO RESULT -->
+      <div class="result-hero" id="result-hero">
+        <div class="result-label" id="res-label">VALUE TODAY (2026)</div>
+        <div class="result-amount" id="res-amount">₹0</div>
+        <div class="result-row">
+          <div class="result-stat">
+            <div class="rs-label">PURCHASE PRICE</div>
+            <div class="rs-val gold" id="res-bought">—</div>
+          </div>
+          <div class="result-stat">
+            <div class="rs-label">TOTAL GAIN</div>
+            <div class="rs-val pos" id="res-gain">—</div>
+          </div>
+          <div class="result-stat">
+            <div class="rs-label">RETURN</div>
+            <div class="rs-val pos" id="res-pct">—</div>
+          </div>
+          <div class="result-stat">
+            <div class="rs-label">CAGR</div>
+            <div class="rs-val pos" id="res-cagr">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- METRICS -->
+      <div class="metrics-grid" id="metrics-grid"></div>
+
+      <!-- PRICE CHART -->
+      <div class="chart-wrap">
+        <div class="chart-header">
+          <div class="chart-title">Gold Price History — Delhi</div>
+          <div class="chart-tabs">
+            <button class="chart-tab active" onclick="showChart('price',this)">Price</button>
+            <button class="chart-tab" onclick="showChart('gain',this)">Gain ₹</button>
+            <button class="chart-tab" onclick="showChart('pct',this)">Return %</button>
+          </div>
+        </div>
+        <canvas id="main-chart" height="220"></canvas>
+      </div>
+
+      <!-- ALL CARATS COMPARISON -->
+      <div class="comp-table-wrap">
+        <div class="comp-table-header">
+          <div class="comp-table-title">All Carats Comparison — Same Period</div>
+        </div>
+        <table id="carat-table"></table>
+      </div>
+
+      <!-- FORECAST -->
+      <div class="section-title" style="margin-top:.5rem">Price Forecast (24K/g)</div>
+      <div class="forecast-grid" id="forecast-grid"></div>
+
+      <!-- FULL TIMELINE TABLE -->
+      <div class="comp-table-wrap">
+        <div class="comp-table-header">
+          <div class="comp-table-title" id="timeline-title">Year-by-Year Value — Your Gold</div>
+        </div>
+        <table id="timeline-table"></table>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="disclaimer">
+  ⚠ All prices are indicative annual averages for Delhi region. Making charges, GST (3%), TCS and hallmark fees are additional. Data sourced from IBJA, GoodReturns, Policybazaar and public bullion market records. Forecasts are model estimates — not financial advice. Verify with your local jeweller before transacting. | Prices in ₹ INR.
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+//  HISTORICAL DATA  (24K per gram, Delhi, annual avg)
+// ═══════════════════════════════════════════════════
+const GOLD_24K = {
+  2000: 448,  2001: 452,  2002: 516,  2003: 573,  2004: 611,
+  2005: 661,  2006: 838,  2007: 986,  2008: 1106, 2009: 1450,
+  2010: 1850, 2011: 2640, 2012: 3100, 2013: 2900, 2014: 2850,
+  2015: 2615, 2016: 2862, 2017: 2915, 2018: 3130, 2019: 3500,
+  2020: 4865, 2021: 4780, 2022: 5267, 2023: 6533, 2024: 7200,
+  2025: 8245, 2026: 15786
+};
+
+const KARAT_FACTOR = { 14: 14/24, 18: 18/24, 22: 22/24, 24: 1 };
+const KARAT_LABEL  = { 14:'14K', 18:'18K', 22:'22K', 24:'24K' };
+const KARAT_COLOR  = { 14:'#B8860B', 18:'#C9A227', 22:'#E8C547', 24:'#F5DFA0' };
+
+// Forecast model (24K per gram, Delhi)
+const FORECAST = {
+  2027: { base: 19200, low: 16500, high: 22000, conf: 'med' },
+  2028: { base: 22800, low: 18500, high: 27000, conf: 'med' },
+  2030: { base: 30000, low: 23000, high: 38000, conf: 'med' },
+  2032: { base: 38500, low: 27000, high: 52000, conf: 'low' },
+  2035: { base: 52000, low: 33000, high: 75000, conf: 'low' }
+};
+
+// State
+let state = { karat: 18, makingOn: false, gstOn: false };
+let chartInstance = null;
+let currentChartType = 'price';
+
+// ═══════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════
+window.onload = () => {
+  renderTimelineMini();
+  updateRangeGradient(document.getElementById('weight-slider'));
+};
+
+function priceFor(year, karat) {
+  const p24 = GOLD_24K[year] || null;
+  if (!p24) return null;
+  return p24 * KARAT_FACTOR[karat];
+}
+
+function fmt(n) {
+  if (n >= 10000000) return '₹' + (n/10000000).toFixed(2) + 'Cr';
+  if (n >= 100000) return '₹' + (n/100000).toFixed(2) + 'L';
+  return '₹' + Math.round(n).toLocaleString('en-IN');
+}
+function fmtSm(n) { return '₹' + Math.round(n).toLocaleString('en-IN'); }
+
+// ═══════════════════════════════════════════════════
+//  UI CONTROLS
+// ═══════════════════════════════════════════════════
+function setKarat(k) {
+  state.karat = k;
+  document.querySelectorAll('.karat-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`[data-karat="${k}"]`).classList.add('active');
+}
+function syncWeight(v) {
+  document.getElementById('weight-input').value = v;
+  document.getElementById('weight-display').textContent = v + 'g';
+  updateRangeGradient(document.getElementById('weight-slider'));
+}
+function syncWeightInput(v) {
+  const clamped = Math.min(Math.max(v, 1), 500);
+  document.getElementById('weight-slider').value = clamped;
+  document.getElementById('weight-display').textContent = clamped + 'g';
+  updateRangeGradient(document.getElementById('weight-slider'));
+}
+function syncMaking(v) {
+  document.getElementById('making-display').textContent = v + '%';
+  updateRangeGradient(document.getElementById('making-slider'));
+}
+function updateRangeGradient(el) {
+  const pct = ((el.value - el.min) / (el.max - el.min)) * 100;
+  el.style.background = `linear-gradient(to right, var(--gold) 0%, var(--gold) ${pct}%, var(--bg4) ${pct}%, var(--bg4) 100%)`;
+}
+function toggleMaking() {
+  state.makingOn = !state.makingOn;
+  const t = document.getElementById('making-toggle');
+  t.classList.toggle('on', state.makingOn);
+  document.getElementById('making-fields').style.display = state.makingOn ? 'block' : 'none';
+}
+function toggleGST() {
+  state.gstOn = !state.gstOn;
+  document.getElementById('gst-toggle').classList.toggle('on', state.gstOn);
+}
+function updateYearInfo() { }
+
+// ═══════════════════════════════════════════════════
+//  TIMELINE MINI
+// ═══════════════════════════════════════════════════
+function renderTimelineMini() {
+  const years = [2000,2005,2010,2012,2015,2019,2020,2022,2023,2024,2025,2026];
+  const prices = years.map(y => GOLD_24K[y]);
+  const maxP = Math.max(...prices);
+  const html = years.map((y,i) => {
+    const p = prices[i];
+    const pct = (p / maxP * 100).toFixed(1);
+    const prev = i > 0 ? prices[i-1] : p;
+    const chg = ((p - prev) / prev * 100).toFixed(1);
+    const color = chg >= 0 ? '#4CAF7D' : '#E05252';
+    return `<div class="tl-row" onclick="document.getElementById('buy-year').value='${y}';document.getElementById('compare-year').value='2026'">
+      <div class="tl-year">${y}</div>
+      <div class="tl-bar-wrap"><div class="tl-bar" style="width:${pct}%"></div></div>
+      <div class="tl-price">${fmtSm(p)}</div>
+      <div class="tl-change" style="color:${color}">${chg >= 0 ? '+' : ''}${chg}%</div>
+    </div>`;
+  }).join('');
+  document.getElementById('timeline-mini').innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════
+//  MAIN CALCULATE
+// ═══════════════════════════════════════════════════
+function calculate() {
+  const buyYear = parseInt(document.getElementById('buy-year').value);
+  const cmpYear = parseInt(document.getElementById('compare-year').value);
+  const weight = parseFloat(document.getElementById('weight-input').value) || 10;
+  const karat = state.karat;
+  const makingPct = state.makingOn ? parseFloat(document.getElementById('making-slider').value) / 100 : 0;
+  const gstMult = state.gstOn ? 1.03 : 1;
+
+  // prices per gram
+  const buyPriceG = priceFor(buyYear, karat) || 0;
+  let cmpPriceG;
+  let isForecast = false;
+  if (cmpYear <= 2026) {
+    cmpPriceG = priceFor(cmpYear, karat) || 0;
+  } else {
+    cmpPriceG = (FORECAST[cmpYear]?.base || FORECAST[2030].base) * KARAT_FACTOR[karat];
+    isForecast = true;
+  }
+
+  // totals
+  const buyTotal = buyPriceG * weight * (1 + makingPct) * gstMult;
+  const cmpTotal = cmpPriceG * weight;
+  const gain = cmpTotal - buyPriceG * weight;
+  const retPct = ((cmpTotal - buyPriceG * weight) / (buyPriceG * weight) * 100);
+  const years = Math.max(cmpYear - buyYear, 1);
+  const cagr = (Math.pow(cmpTotal / (buyPriceG * weight), 1 / years) - 1) * 100;
+
+  // show results
+  document.getElementById('empty-state').style.display = 'none';
+  document.getElementById('results-content').style.display = 'block';
+
+  // hero
+  document.getElementById('res-label').textContent = `VALUE IN ${cmpYear}${isForecast ? ' (FORECAST)' : ''} — ${karat}K · ${weight}g`;
+  document.getElementById('res-amount').textContent = fmt(cmpTotal);
+  document.getElementById('res-bought').textContent = fmt(buyTotal);
+  document.getElementById('res-gain').textContent = (gain >= 0 ? '+' : '') + fmt(gain);
+  document.getElementById('res-gain').className = 'rs-val ' + (gain >= 0 ? 'pos' : 'neg');
+  document.getElementById('res-pct').textContent = (retPct >= 0 ? '+' : '') + retPct.toFixed(1) + '%';
+  document.getElementById('res-pct').className = 'rs-val ' + (retPct >= 0 ? 'pos' : 'neg');
+  document.getElementById('res-cagr').textContent = cagr.toFixed(1) + '% p.a.';
+  document.getElementById('res-cagr').className = 'rs-val ' + (cagr >= 0 ? 'pos' : 'neg');
+
+  // metrics
+  const holdYears = cmpYear - buyYear;
+  const v2x = buyPriceG > 0 ? (buyYear + Math.ceil(Math.log(2) / Math.log(1 + cagr / 100))) : null;
+  document.getElementById('metrics-grid').innerHTML = `
+    <div class="metric-card"><div class="mc-val">${holdYears}y</div><div class="mc-label">Hold Period</div></div>
+    <div class="metric-card"><div class="mc-val">${(retPct/holdYears).toFixed(1)}%</div><div class="mc-label">Avg Yearly Return</div></div>
+    <div class="metric-card"><div class="mc-val">${(cmpPriceG / buyPriceG).toFixed(1)}×</div><div class="mc-label">Price Multiple</div></div>
+    <div class="metric-card"><div class="mc-val">${fmtSm(buyPriceG)}</div><div class="mc-label">Buy Price/g (${karat}K)</div></div>
+    <div class="metric-card"><div class="mc-val">${fmtSm(cmpPriceG)}</div><div class="mc-label">${cmpYear} Price/g</div></div>
+    <div class="metric-card"><div class="mc-val">${fmtSm(weight * cmpPriceG / holdYears)}</div><div class="mc-label">Avg Annual Gain</div></div>
+  `;
+
+  // chart
+  renderChart(buyYear, karat, weight, currentChartType);
+
+  // carat comparison table
+  renderCaratTable(buyYear, cmpYear, weight);
+
+  // forecast grid
+  renderForecast(buyYear, weight, karat);
+
+  // timeline table
+  renderTimelineTable(buyYear, karat, weight);
+}
+
+// ═══════════════════════════════════════════════════
+//  CHART
+// ═══════════════════════════════════════════════════
+function showChart(type, btn) {
+  currentChartType = type;
+  document.querySelectorAll('.chart-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const buyYear = parseInt(document.getElementById('buy-year').value);
+  const karat = state.karat;
+  const weight = parseFloat(document.getElementById('weight-input').value) || 10;
+  renderChart(buyYear, karat, weight, type);
+}
+
+function renderChart(buyYear, karat, weight, type) {
+  const years = Object.keys(GOLD_24K).map(Number).sort();
+  const fYears = [2027,2028,2030,2032,2035];
+  const allYears = [...years, ...fYears];
+
+  const buyPriceG = priceFor(buyYear, karat);
+  const labels = allYears.map(y => y >= 2027 ? y + '★' : String(y));
+  const data = allYears.map(y => {
+    let pg;
+    if (y <= 2026) pg = GOLD_24K[y] * KARAT_FACTOR[karat];
+    else pg = (FORECAST[y]?.base || 0) * KARAT_FACTOR[karat];
+    if (type === 'price') return pg;
+    if (type === 'gain') return (pg - buyPriceG) * weight;
+    if (type === 'pct') return ((pg - buyPriceG) / buyPriceG * 100);
+    return pg;
+  });
+
+  const isForecast = allYears.map(y => y >= 2027);
+  const colors = allYears.map((y, i) =>
+    y === buyYear ? 'rgba(224,82,82,0.8)' :
+    y >= 2027 ? 'rgba(91,155,213,0.55)' :
+    'rgba(201,162,39,0.75)'
+  );
+  const borders = allYears.map(y =>
+    y === buyYear ? '#E05252' : y >= 2027 ? '#5B9BD5' : '#C9A227'
+  );
+
+  const ctx = document.getElementById('main-chart').getContext('2d');
+  if (chartInstance) chartInstance.destroy();
+
+  chartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: type === 'price' ? `${karat}K Price/g` : type === 'gain' ? 'Total Gain ₹' : 'Return %',
+        data,
+        backgroundColor: colors,
+        borderColor: borders,
+        borderWidth: 1,
+        borderRadius: 3,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1C1A16', borderColor: '#C9A227', borderWidth: 1,
+          titleColor: '#C9A227', bodyColor: '#F2EDD7',
+          titleFont: { family: 'DM Mono', size: 11 },
+          bodyFont: { family: 'DM Mono', size: 12 },
+          callbacks: {
+            label: ctx => {
+              const v = ctx.raw;
+              if (type === 'pct') return (v >= 0 ? '+' : '') + v.toFixed(1) + '%';
+              return fmt(v);
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(201,162,39,0.06)' },
+          ticks: { color: '#8C8270', font: { family: 'DM Mono', size: 9 }, maxRotation: 45 }
+        },
+        y: {
+          grid: { color: 'rgba(201,162,39,0.06)' },
+          ticks: {
+            color: '#8C8270', font: { family: 'DM Mono', size: 10 },
+            callback: v => type === 'pct' ? v.toFixed(0) + '%' : fmt(v)
+          }
+        }
+      }
+    }
+  });
+}
+
+// ═══════════════════════════════════════════════════
+//  CARAT COMPARISON TABLE
+// ═══════════════════════════════════════════════════
+function renderCaratTable(buyYear, cmpYear, weight) {
+  const karats = [14, 18, 22, 24];
+  let html = `<thead><tr>
+    <th>Carat</th><th>Purity</th>
+    <th>Buy Price (${buyYear})</th>
+    <th>Value (${cmpYear})</th>
+    <th>Total Gain</th>
+    <th>Return %</th>
+    <th>CAGR</th>
+  </tr></thead><tbody>`;
+
+  karats.forEach(k => {
+    const bp = priceFor(buyYear, k) || 0;
+    let cp;
+    if (cmpYear <= 2026) cp = priceFor(cmpYear, k) || 0;
+    else cp = (FORECAST[cmpYear]?.base || FORECAST[2030].base) * KARAT_FACTOR[k];
+
+    const buyTotal = bp * weight;
+    const cmpTotal = cp * weight;
+    const gain = cmpTotal - buyTotal;
+    const ret = buyTotal > 0 ? ((cmpTotal - buyTotal) / buyTotal * 100) : 0;
+    const yrs = Math.max(cmpYear - buyYear, 1);
+    const cagr = buyTotal > 0 ? (Math.pow(cmpTotal / buyTotal, 1 / yrs) - 1) * 100 : 0;
+    const isActive = k === state.karat;
+
+    html += `<tr ${isActive ? 'class="highlight-row"' : ''}>
+      <td style="color:${KARAT_COLOR[k]};font-weight:500">${k}K ${isActive ? '◆' : ''}</td>
+      <td>${(KARAT_FACTOR[k] * 100).toFixed(2)}%</td>
+      <td>${fmt(buyTotal)}</td>
+      <td>${fmt(cmpTotal)}</td>
+      <td style="color:${gain >= 0 ? '#4CAF7D' : '#E05252'}">${gain >= 0 ? '+' : ''}${fmt(gain)}</td>
+      <td style="color:${ret >= 0 ? '#4CAF7D' : '#E05252'}">${ret >= 0 ? '+' : ''}${ret.toFixed(1)}%</td>
+      <td style="color:var(--gold)">${cagr.toFixed(1)}% p.a.</td>
+    </tr>`;
+  });
+  html += '</tbody>';
+  document.getElementById('carat-table').innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════
+//  FORECAST GRID
+// ═══════════════════════════════════════════════════
+function renderForecast(buyYear, weight, karat) {
+  const buyPriceG = priceFor(buyYear, karat) || 0;
+  const confLabel = { high: 'High confidence', med: 'Medium confidence', low: 'Lower confidence' };
+  const html = Object.entries(FORECAST).map(([yr, fc]) => {
+    const pg = fc.base * KARAT_FACTOR[karat];
+    const pgLow = fc.low * KARAT_FACTOR[karat];
+    const pgHigh = fc.high * KARAT_FACTOR[karat];
+    const total = pg * weight;
+    const ret = buyPriceG > 0 ? ((pg - buyPriceG) / buyPriceG * 100).toFixed(1) : '—';
+    return `<div class="forecast-card">
+      <div class="fc-year">${yr} FORECAST — ${karat}K · ${weight}g</div>
+      <div class="fc-price">${fmt(total)}</div>
+      <div class="fc-range">Range: ${fmtSm(pgLow * weight)} – ${fmtSm(pgHigh * weight)}</div>
+      <div class="fc-range">${fmtSm(pg)}/g · From ${fmtSm(pgLow)}/g – ${fmtSm(pgHigh)}/g</div>
+      <div><span class="fc-conf ${fc.conf}">${confLabel[fc.conf]}</span></div>
+      ${buyPriceG > 0 ? `<div style="font-size:11px;color:#4CAF7D;margin-top:6px;font-family:'DM Mono',monospace">Est. return: +${ret}% from ${buyYear}</div>` : ''}
+    </div>`;
+  }).join('');
+  document.getElementById('forecast-grid').innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════
+//  YEAR-BY-YEAR TABLE
+// ═══════════════════════════════════════════════════
+function renderTimelineTable(buyYear, karat, weight) {
+  const buyPriceG = priceFor(buyYear, karat) || 1;
+  const years = Object.keys(GOLD_24K).map(Number).sort();
+  document.getElementById('timeline-title').textContent = `Year-by-Year Value — ${weight}g of ${karat}K Gold (bought ${buyYear})`;
+
+  let html = `<thead><tr>
+    <th>Year</th><th>Price/g (${karat}K)</th>
+    <th>Total Value</th><th>Gain/Loss</th><th>Return %</th><th>×Multiple</th>
+  </tr></thead><tbody>`;
+
+  years.forEach(y => {
+    const pg = priceFor(y, karat);
+    const total = pg * weight;
+    const buyVal = buyPriceG * weight;
+    const gain = total - buyVal;
+    const ret = ((total - buyVal) / buyVal * 100);
+    const mult = (pg / buyPriceG).toFixed(2);
+    const isActive = y === buyYear;
+    const isCurrent = y === 2026;
+
+    html += `<tr ${isActive ? 'class="highlight-row"' : ''}>
+      <td>${y}${isActive ? ' 📌 buy' : isCurrent ? ' ← today' : ''}</td>
+      <td>${fmtSm(pg)}</td>
+      <td>${fmt(total)}</td>
+      <td style="color:${gain >= 0 ? '#4CAF7D' : '#E05252'}">${gain >= 0 ? '+' : ''}${fmt(gain)}</td>
+      <td style="color:${ret >= 0 ? '#4CAF7D' : '#E05252'}">${ret >= 0 ? '+' : ''}${ret.toFixed(1)}%</td>
+      <td style="color:var(--gold)">${mult}×</td>
+    </tr>`;
+  });
+
+  // add forecast years
+  Object.entries(FORECAST).forEach(([yr, fc]) => {
+    const pg = fc.base * KARAT_FACTOR[karat];
+    const total = pg * weight;
+    const buyVal = buyPriceG * weight;
+    const gain = total - buyVal;
+    const ret = ((total - buyVal) / buyVal * 100);
+    const mult = (pg / buyPriceG).toFixed(2);
+    html += `<tr style="opacity:0.75">
+      <td>${yr} ★ fcst</td>
+      <td>${fmtSm(pg)}</td>
+      <td>${fmt(total)}</td>
+      <td style="color:#5B9BD5">${gain >= 0 ? '+' : ''}${fmt(gain)}</td>
+      <td style="color:#5B9BD5">${ret >= 0 ? '+' : ''}${ret.toFixed(1)}%</td>
+      <td style="color:#5B9BD5">${mult}×</td>
+    </tr>`;
+  });
+
+  html += '</tbody>';
+  document.getElementById('timeline-table').innerHTML = html;
+}
+
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</body>
+</html>
